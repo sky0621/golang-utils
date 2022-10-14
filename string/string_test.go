@@ -1,4 +1,4 @@
-package stringutil
+package string
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ func TestStringBuilderAppend(t *testing.T) {
 	}
 	for idx, tt := range tests {
 		t.Run(fmt.Sprintf("[No.%d] %s", idx+1, tt.name), func(t *testing.T) {
-			builder := NewStringBuilder()
+			builder := NewBuilder()
 			for _, in := range tt.input {
 				builder.Append(in)
 			}
@@ -45,7 +45,7 @@ func TestStringBuilderAppendInt(t *testing.T) {
 	}
 	for idx, tt := range tests {
 		t.Run(fmt.Sprintf("[No.%d] %s", idx+1, tt.name), func(t *testing.T) {
-			builder := NewStringBuilder()
+			builder := NewBuilder()
 			for _, in := range tt.input {
 				builder.AppendInt(in)
 			}
