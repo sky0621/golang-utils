@@ -1,3 +1,3 @@
-module github.com/sky0621/go-core
+module github.com/sky0621/golang-utils
 
 go 1.19
