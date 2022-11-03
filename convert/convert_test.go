@@ -26,35 +26,40 @@ func TestToPtrAndToVal(t *testing.T) {
 	var f32val float32 = 3.2
 	var f64val = 6.4
 
-	tests := map[string]func() bool{
-		"bool <-> *bool": func() bool { return ToVal(ToPtr(bVal)) != bVal },
+	tests := []struct {
+		name string
+		val  any
+	}{
+		{name: "bool <-> *bool", val: bVal},
 
-		"string <-> *string": func() bool { return ToVal(ToPtr(sVal)) != sVal },
+		{name: "string <-> *string", val: sVal},
 
-		"int <-> *int":     func() bool { return ToVal(ToPtr(iVal)) != iVal },
-		"int8 <-> *int8":   func() bool { return ToVal(ToPtr(i8val)) != i8val },
-		"int16 <-> *int16": func() bool { return ToVal(ToPtr(i16val)) != i16val },
-		"int32 <-> *int32": func() bool { return ToVal(ToPtr(i32val)) != i32val },
-		"int64 <-> *int64": func() bool { return ToVal(ToPtr(i64val)) != i64val },
+		{name: "int <-> *int", val: iVal},
+		{name: "int8 <-> *int8", val: i8val},
+		{name: "int16 <-> *int16", val: i16val},
+		{name: "int32 <-> *int32", val: i32val},
+		{name: "int64 <-> *int64", val: i64val},
 
-		"uint8 <-> *uint8":   func() bool { return ToVal(ToPtr(u8val)) != u8val },
-		"uint16 <-> *uint16": func() bool { return ToVal(ToPtr(u16val)) != u16val },
-		"uint32 <-> *uint32": func() bool { return ToVal(ToPtr(u32val)) != u32val },
-		"uint64 <-> *uint64": func() bool { return ToVal(ToPtr(u64val)) != u64val },
+		{name: "uint8 <-> *uint8", val: u8val},
+		{name: "uint16 <-> *uint16", val: u16val},
+		{name: "uint32 <-> *uint32", val: u32val},
+		{name: "uint64 <-> *uint64", val: u64val},
 
-		"byte <-> *byte": func() bool { return ToVal(ToPtr(byteVal)) != byteVal },
+		{name: "byte <-> *byte", val: byteVal},
 
-		"rune <-> *rune": func() bool { return ToVal(ToPtr(runeVal)) != runeVal },
+		{name: "rune <-> *rune", val: runeVal},
 
-		"float32 <-> *float32": func() bool { return ToVal(ToPtr(f32val)) != f32val },
-		"float64 <-> *float64": func() bool { return ToVal(ToPtr(f64val)) != f64val },
+		{name: "float32 <-> *float32", val: f32val},
+		{name: "float64 <-> *float64", val: f64val},
 
 		// complex は端折る。
 	}
-	for name, test := range tests {
-		t.Run(fmt.Sprintf(name), func(t *testing.T) {
-			t.Parallel()
-			test()
+	for idx, tt := range tests {
+		t.Run(fmt.Sprintf("[No.%d] %s", idx+1, tt.name), func(t *testing.T) {
+			got := ToVal(ToPtr(tt.val))
+			if got != tt.val {
+				t.Errorf("expected: %v, but got %v", tt.val, got)
+			}
 		})
 	}
 }
