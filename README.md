@@ -1,1 +1,1 @@
-# go-core
+# golang-utils
