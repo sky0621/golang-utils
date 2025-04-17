@@ -2,6 +2,7 @@ package convert
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -59,6 +60,83 @@ func TestToPtrAndToVal(t *testing.T) {
 			got := ToVal(ToPtr(tt.val))
 			if got != tt.val {
 				t.Errorf("expected: %v, but got %v", tt.val, got)
+			}
+		})
+	}
+}
+
+func TestToMap(t *testing.T) {
+	type Person struct {
+		ID   int
+		Name string
+	}
+
+	tests := []struct {
+		name     string
+		slice    interface{}
+		keyFunc  interface{}
+		expected interface{}
+	}{
+		{
+			name: "slice of structs to map with ID as key",
+			slice: []Person{
+				{ID: 1, Name: "Alice"},
+				{ID: 2, Name: "Bob"},
+				{ID: 3, Name: "Charlie"},
+			},
+			keyFunc: func(p Person) int { return p.ID },
+			expected: map[int]Person{
+				1: {ID: 1, Name: "Alice"},
+				2: {ID: 2, Name: "Bob"},
+				3: {ID: 3, Name: "Charlie"},
+			},
+		},
+		{
+			name:     "slice of strings to map with first character as key",
+			slice:    []string{"apple", "banana", "cherry"},
+			keyFunc:  func(s string) byte { return s[0] },
+			expected: map[byte]string{'a': "apple", 'b': "banana", 'c': "cherry"},
+		},
+		{
+			name:     "empty slice",
+			slice:    []int{},
+			keyFunc:  func(i int) int { return i },
+			expected: map[int]int{},
+		},
+		{
+			name:     "slice of ints to map with doubled value as key",
+			slice:    []int{1, 2, 3},
+			keyFunc:  func(i int) int { return i * 2 },
+			expected: map[int]int{2: 1, 4: 2, 6: 3},
+		},
+	}
+
+	for idx, tt := range tests {
+		t.Run(fmt.Sprintf("[No.%d] %s", idx+1, tt.name), func(t *testing.T) {
+			switch slice := tt.slice.(type) {
+			case []Person:
+				keyFunc := tt.keyFunc.(func(Person) int)
+				expected := tt.expected.(map[int]Person)
+				result := ToMap(slice, keyFunc)
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("expected: %v, but got %v", expected, result)
+				}
+			case []string:
+				keyFunc := tt.keyFunc.(func(string) byte)
+				expected := tt.expected.(map[byte]string)
+				result := ToMap(slice, keyFunc)
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("expected: %v, but got %v", expected, result)
+				}
+			case []int:
+				keyFunc := tt.keyFunc.(func(int) int)
+				expected := tt.expected.(map[int]int)
+				result := ToMap(slice, keyFunc)
+				if !reflect.DeepEqual(result, expected) {
+					t.Errorf("expected: %v, but got %v", expected, result)
+				}
+			default:
+				t.Fatalf("unsupported test case type: %T", tt.slice)
 			}
 		})
 	}
