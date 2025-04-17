@@ -6,28 +6,38 @@ import (
 )
 
 // NewBuilder ...
-func NewBuilder() Builder {
-	return &builder{sb: strings.Builder{}, anyErrors: []error{}}
+func NewBuilder() Builder[any] {
+	return &builder[any]{sb: strings.Builder{}, anyErrors: []error{}}
 }
 
 // Builder ...
-type Builder interface {
-	Append(str string) Builder
-	AppendInt(num int) Builder
+type Builder[T any] interface {
+	Append(v T) Builder[T]
 	ToString() string
 	HasError() bool
 	Errors() []error
 	ErrorMsg() string
 }
 
-type builder struct {
+type builder[T any] struct {
 	sb               strings.Builder
 	anyErrors        []error
 	anyErrorMessages []string
 }
 
 // Append ...
-func (b *builder) Append(str string) Builder {
+func (b *builder[T]) Append(v T) Builder[T] {
+	var str string
+
+	switch val := any(v).(type) {
+	case string:
+		str = val
+	case int:
+		str = fmt.Sprintf("%d", val)
+	default:
+		str = fmt.Sprintf("%v", val)
+	}
+
 	_, err := b.sb.WriteString(str)
 	if err != nil {
 		b.anyErrors = append(b.anyErrors, err)
@@ -36,18 +46,8 @@ func (b *builder) Append(str string) Builder {
 	return b
 }
 
-// AppendInt ...
-func (b *builder) AppendInt(num int) Builder {
-	_, err := b.sb.WriteString(fmt.Sprintf("%d", num))
-	if err != nil {
-		b.anyErrors = append(b.anyErrors, err)
-		b.anyErrorMessages = append(b.anyErrorMessages, err.Error())
-	}
-	return b
-}
-
 // ToString ...
-func (b *builder) ToString() string {
+func (b *builder[T]) ToString() string {
 	if len(b.anyErrors) > 0 {
 		return ""
 	}
@@ -55,17 +55,17 @@ func (b *builder) ToString() string {
 }
 
 // HasError ...
-func (b *builder) HasError() bool {
+func (b *builder[T]) HasError() bool {
 	return b.anyErrors != nil && len(b.anyErrors) > 0
 }
 
 // Errors ...
-func (b *builder) Errors() []error {
+func (b *builder[T]) Errors() []error {
 	return b.anyErrors
 }
 
 // ErrorMsg ...
-func (b *builder) ErrorMsg() string {
+func (b *builder[T]) ErrorMsg() string {
 	return strings.Join(b.anyErrorMessages, "\n")
 }
 
